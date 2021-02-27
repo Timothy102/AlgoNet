@@ -1,0 +1,1 @@
+python3 model.py -epochs 5 -batch 32
