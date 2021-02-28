@@ -2,6 +2,7 @@ import os
 import numpy
 from random import randint
 
+
 def bubble_sort(array):
     n = len(array)
 

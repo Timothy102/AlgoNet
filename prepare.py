@@ -5,9 +5,10 @@ from tqdm import tqdm
 from sorting import algo_list, merge_sort, bubble_sort, insertion_sort, quicksort, bucket_sort, countInv
 
 TRAINING_SIZE = 100000
+CLASSES = len(algo_list)
 
 data = np.zeros((TRAINING_SIZE,2))
-labels = np.zeros((TRAINING_SIZE,1))
+labels = np.zeros((TRAINING_SIZE,CLASSES))
 
 ### THE PLAN ###
 # random array generation, extract info from array that might be helpful for each sort, also length and številka zamenjav potrebnih, check the book about dp
@@ -44,6 +45,11 @@ def prepare_data():
             if t > min_time : 
                 min_time = t
                 min_index = j
-    labels[i] = min_index
+    labels[i][min_index] = 1
     data[i] = extract_data(arr)
     return data, labels
+
+def onehotencode(x):
+    y = np.zeros((CLASSES,1))
+    y[x] = 1
+    return y

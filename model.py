@@ -12,7 +12,7 @@ from prepare import prepare_data, algo_list
 data, targets = prepare_data()
 
 ACT = tf.nn.leaky_relu
-INPUT_SHAPE = data.shape
+INPUT_SHAPE = (None,2)
 EPOCHS = 5
 BATCH_SIZE = 32
 CLASSES = len(algo_list)
@@ -32,29 +32,22 @@ def parseArguments(args=sys.argv[1:]):
 def build_model(input_shape = INPUT_SHAPE):
     model = Sequential([
         Dense(128,activation=ACT, input_shape = input_shape),
-        BatchNormalization(),
+#        BatchNormalization(),
         Dropout(0.2),
         Dense(64, activation=ACT),
-        BatchNormalization(),
+#        BatchNormalization(),
         Dropout(0.2),
         Dense(16, activation=ACT),
         Dense(5, activation='softmax')
     ])
-    model.compile(optimizer='adam',loss='categorical_cross_entropy', metrics=['accuracy'])
+    model.compile(optimizer='adam',loss='sparse_categorical_crossentropy', metrics=['accuracy'])
     model.summary()
     return model
 
-def train_model(data, target,model = model, args = args):
-    early_stopper = EarlyStopping(monitor = 'val_loss',patience=2)
-    reduce_lr = ReduceLROnPlateau(monitor='val_accuracy')
-    cbs = [early_stopper, reduce_lr]
-
-    history = model.fit(data,target, epochs = 5, batch_size=32, callbacks=cbs)
-    return history
 
 def plot(history):
-    acc = history.history['acc']
-    val_acc = history.history['val_acc']
+    acc = history.history['accuracy']
+    val_acc = history.history['val_accuracy']
     loss = history.history['loss']
     val_loss = history.history['val_loss']
 
@@ -78,6 +71,15 @@ def plot(history):
 
 model = build_model()
 args = parseArguments()
+
+def train_model(data, target,model = model, args = args):
+    early_stopper = EarlyStopping(monitor = 'val_loss',patience=2)
+    reduce_lr = ReduceLROnPlateau(monitor='val_accuracy')
+    cbs = [early_stopper, reduce_lr]
+
+    history = model.fit(data,target, validation_split = 0.15, epochs = 5, batch_size=32, callbacks=cbs)
+    return history
+
 history = train_model(data,targets)
 plot(history)
 
