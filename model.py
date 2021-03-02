@@ -7,15 +7,13 @@ from tensorflow.keras import Sequential, Model, Input
 from tensorflow.keras.layers import Dense, Softmax, BatchNormalization, Dropout, Flatten
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 
-from prepare import prepare_data, algo_list
+from prepare import data,targets, algo_list
+from config import EPOCHS, BATCH_SIZE, INPUT_SHAPE
 
-data, targets = prepare_data()
 
 ACT = tf.nn.leaky_relu
-INPUT_SHAPE = (None,2)
-EPOCHS = 5
-BATCH_SIZE = 32
 CLASSES = len(algo_list)
+INPUT_SHAPE = data.shape
 
 def parseArguments(args=sys.argv[1:]):
     parser = argparse.ArgumentParser(description="Training Parser")
@@ -34,17 +32,18 @@ def build_model(input_shape = INPUT_SHAPE):
         Dense(128,activation=ACT, input_shape = input_shape),
 #        BatchNormalization(),
         Dropout(0.2),
-        Dense(64, activation=ACT),
+        #Dense(64, activation=ACT),
 #        BatchNormalization(),
-        Dropout(0.2),
-        Dense(16, activation=ACT),
+        #Dropout(0.2),
+        #Dense(16, activation=ACT),
         Dense(5, activation='softmax')
     ])
-    model.compile(optimizer='adam',loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer='sgd',loss = 'sparse_categorical_crossentropy', metrics=['accuracy'])
     model.summary()
     return model
 
 
+# create a tf data object
 def plot(history):
     acc = history.history['accuracy']
     val_acc = history.history['val_accuracy']
@@ -75,9 +74,9 @@ args = parseArguments()
 def train_model(data, target,model = model, args = args):
     early_stopper = EarlyStopping(monitor = 'val_loss',patience=2)
     reduce_lr = ReduceLROnPlateau(monitor='val_accuracy')
-    cbs = [early_stopper, reduce_lr]
+    cbs = [reduce_lr]
 
-    history = model.fit(data,target, validation_split = 0.15, epochs = 5, batch_size=32, callbacks=cbs)
+    history = model.fit(data,target, validation_split = 0.15, epochs = args.epochs, batch_size=args.batch_size,shuffle=True, callbacks=cbs)
     return history
 
 history = train_model(data,targets)

@@ -1,4 +1,3 @@
-ACT = tf.nn.leaky_relu
-INPUT_SHAPE = data.shape
-EPOCHS = 5
+INPUT_SHAPE = (None,2)
+EPOCHS = 10
 BATCH_SIZE = 32
